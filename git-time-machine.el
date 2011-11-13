@@ -84,7 +84,6 @@
         (find-file filename)
       (time-machine-create-buffer filename current-position buffername))))
 
-
 (define-minor-mode time-machine-mode
   "Toggle Time Machine mode, globally.
 Time Machine mode is an extension to vc mode that allows you

@@ -51,6 +51,20 @@
        current-position 0))
     (git-time-machine-create-buffer filename current-position buffername)))
 
+(defun git-time-machine-diff-forwards ()
+  (interactive)
+  (let ((first-rev) (last-rev) (filename) (current-position) (buffername))
+    (if git-time-machine-filename
+        (progn
+          (setq
+           filename git-time-machine-filename
+           buffername git-time-machine-buffer-name
+           current-position (- git-time-machine-current-position 2)))
+      (error "Cannot time machine forwards, not a time machine buffer"))
+    (if (< current-position 0)
+        (find-file filename)
+      (git-time-machine-create-buffer filename current-position buffername))))
+
 (defun git-time-machine-create-buffer (filename current-position buffername)
   (let (first-rev last-rev)
     (with-temp-buffer
@@ -73,19 +87,5 @@
     (setq git-time-machine-current-position (+ 1 current-position)
           git-time-machine-buffer-name buffername
           git-time-machine-filename filename)))
-
-(defun git-time-machine-diff-forwards ()
-  (interactive)
-  (let ((first-rev) (last-rev) (filename) (current-position) (buffername))
-    (if git-time-machine-filename
-        (progn
-          (setq
-           filename git-time-machine-filename
-           buffername git-time-machine-buffer-name
-           current-position (- git-time-machine-current-position 2)))
-      (error "Cannot time machine forwards, not a time machine buffer"))
-    (if (< current-position 0)
-        (find-file filename)
-      (git-time-machine-create-buffer filename current-position buffername))))
 
 (provide 'git-time-machine)

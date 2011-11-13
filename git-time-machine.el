@@ -22,32 +22,36 @@
 ;; along with GNU Emacs; see the file COPYING. If not, write to the
 ;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 ;; Boston, MA 02110-1301, USA.
+;;
+;; Commentary:
+;; Git Time Machine allows you to easily go backward or forward
+;; in a file's history.
 
-(defvar time-machine-current-position nil)
-(make-variable-buffer-local 'time-machine-current-position)
+(defvar git-time-machine-current-position nil)
+(make-variable-buffer-local 'git-time-machine-current-position)
 
-(defvar time-machine-filename nil)
-(make-variable-buffer-local 'time-machine-filename)
+(defvar git-time-machine-filename nil)
+(make-variable-buffer-local 'git-time-machine-filename)
 
-(defvar time-machine-buffer-name nil)
-(make-variable-buffer-local 'time-machine-buffer-name)
+(defvar git-time-machine-buffer-name nil)
+(make-variable-buffer-local 'git-time-machine-buffer-name)
 
-(defun time-machine-git-diff-backwards ()
+(defun git-time-machine-diff-backwards ()
   (interactive)
   (let ((filename) (current-position) (buffername))
-    (if time-machine-filename
+    (if git-time-machine-filename
         (progn
           (setq
-           filename time-machine-filename
-           buffername time-machine-buffer-name
-           current-position time-machine-current-position))
+           filename git-time-machine-filename
+           buffername git-time-machine-buffer-name
+           current-position git-time-machine-current-position))
       (setq
        filename (buffer-file-name)
        buffername (buffer-name)
        current-position 0))
-    (time-machine-create-buffer filename current-position buffername)))
+    (git-time-machine-create-buffer filename current-position buffername)))
 
-(defun time-machine-create-buffer (filename current-position buffername)
+(defun git-time-machine-create-buffer (filename current-position buffername)
   (let (first-rev last-rev)
     (with-temp-buffer
       (call-process "/usr/bin/git" nil t nil
@@ -66,32 +70,22 @@
     (beginning-of-buffer)
     (diff-mode)
     (setq buffer-read-only t)
-    (setq time-machine-current-position (+ 1 current-position)
-          time-machine-buffer-name buffername
-          time-machine-filename filename)))
+    (setq git-time-machine-current-position (+ 1 current-position)
+          git-time-machine-buffer-name buffername
+          git-time-machine-filename filename)))
 
-(defun time-machine-git-diff-forwards ()
+(defun git-time-machine-diff-forwards ()
   (interactive)
   (let ((first-rev) (last-rev) (filename) (current-position) (buffername))
-    (if time-machine-filename
+    (if git-time-machine-filename
         (progn
           (setq
-           filename time-machine-filename
-           buffername time-machine-buffer-name
-           current-position (- time-machine-current-position 2)))
+           filename git-time-machine-filename
+           buffername git-time-machine-buffer-name
+           current-position (- git-time-machine-current-position 2)))
       (error "Cannot time machine forwards, not a time machine buffer"))
     (if (< current-position 0)
         (find-file filename)
-      (time-machine-create-buffer filename current-position buffername))))
+      (git-time-machine-create-buffer filename current-position buffername))))
 
-(define-minor-mode time-machine-mode
-  "Toggle Time Machine mode, globally.
-Time Machine mode is an extension to vc mode that allows you
-to easily go backward or forward in a file's history."
-
-  ;; Init val
-  nil
-  "Time Machine"
-  )
-
-(provide 'time-machine-mode)
+(provide 'git-time-machine)

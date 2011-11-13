@@ -80,6 +80,8 @@
     (setq buffer-read-only nil)
     (erase-buffer)
     (call-process "/usr/bin/git" nil t nil
+                  "log" (format "%s..%s" first-rev last-rev) "--" filename)
+    (call-process "/usr/bin/git" nil t nil
                   "diff" first-rev last-rev filename)
     (beginning-of-buffer)
     (diff-mode)

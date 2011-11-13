@@ -37,6 +37,7 @@
 (make-variable-buffer-local 'git-time-machine-buffer-name)
 
 (defun git-time-machine-diff-backwards ()
+  "Show the previous (older) commited diff to the current file"
   (interactive)
   (let ((filename) (current-position) (buffername))
     (if git-time-machine-filename
@@ -52,6 +53,7 @@
     (git-time-machine-create-buffer filename current-position buffername)))
 
 (defun git-time-machine-diff-forwards ()
+  "Show the next (newer) commited diff to the current file"
   (interactive)
   (let ((first-rev) (last-rev) (filename) (current-position) (buffername))
     (if git-time-machine-filename

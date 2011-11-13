@@ -36,6 +36,7 @@
 (defvar git-time-machine-buffer-name nil)
 (make-variable-buffer-local 'git-time-machine-buffer-name)
 
+;;;###autoload
 (defun git-time-machine-diff-backwards ()
   "Show the previous (older) commited diff to the current file"
   (interactive)
@@ -52,6 +53,7 @@
        current-position 0))
     (git-time-machine-create-buffer filename current-position buffername)))
 
+;;;###autoload
 (defun git-time-machine-diff-forwards ()
   "Show the next (newer) commited diff to the current file"
   (interactive)

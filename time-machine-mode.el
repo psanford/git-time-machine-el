@@ -29,19 +29,27 @@
 (defvar time-machine-filename nil)
 (make-variable-buffer-local 'time-machine-filename)
 
+(defvar time-machine-buffer-name nil)
+(make-variable-buffer-local 'time-machine-buffer-name)
+
 (defun time-machine-git-diff-backwards ()
   (interactive)
-  (let ((first-rev) (last-rev) (filename) (current-position))
+  (let ((filename) (current-position) (buffername))
     (if time-machine-filename
         (progn
           (setq
            filename time-machine-filename
+           buffername time-machine-buffer-name
            current-position time-machine-current-position))
       (setq
        filename (buffer-file-name)
+       buffername (buffer-name)
        current-position 0))
+    (time-machine-create-buffer filename current-position buffername)))
+
+(defun time-machine-create-buffer (filename current-position buffername)
+  (let (first-rev last-rev)
     (with-temp-buffer
-      (message "%s" current-position)
       (call-process "/usr/bin/git" nil t nil
                     "log" "--pretty=format:%h"
                     "-n" "2" (format "--skip=%d" current-position) filename)
@@ -50,43 +58,32 @@
       (next-line)
       (setq first-rev (buffer-substring (point) (line-end-position))))
     (switch-to-buffer (get-buffer-create
-                       (format "*vc-diff %s %s*" first-rev last-rev)))
+                       (format "*timemachine %s*" buffername)))
+    (setq buffer-read-only nil)
+    (erase-buffer)
     (call-process "/usr/bin/git" nil t nil
                   "diff" first-rev last-rev filename)
     (beginning-of-buffer)
     (diff-mode)
+    (setq buffer-read-only t)
     (setq time-machine-current-position (+ 1 current-position)
+          time-machine-buffer-name buffername
           time-machine-filename filename)))
 
 (defun time-machine-git-diff-forwards ()
   (interactive)
-  (let ((first-rev) (last-rev) (filename) (current-position))
+  (let ((first-rev) (last-rev) (filename) (current-position) (buffername))
     (if time-machine-filename
         (progn
           (setq
            filename time-machine-filename
+           buffername time-machine-buffer-name
            current-position (- time-machine-current-position 2)))
       (error "Cannot time machine forwards, not a time machine buffer"))
     (if (< current-position 0)
         (find-file filename)
-      (with-temp-buffer
-        (message "%s" current-position)
-        (call-process "/usr/bin/git" nil t nil
-                      "log" "--pretty=format:%h"
-                      "-n" "2" (format "--skip=%d" current-position) filename)
-        (beginning-of-buffer)
-        (setq last-rev (buffer-substring (point) (line-end-position)))
-        (next-line)
-        (setq first-rev (buffer-substring (point) (line-end-position))))
-      (switch-to-buffer (get-buffer-create
-                         (format "*vc-diff %s %s*" first-rev last-rev)))
-      (erase-buffer)
-      (call-process "/usr/bin/git" nil t nil
-                    "diff" first-rev last-rev filename)
-      (beginning-of-buffer)
-      (diff-mode)
-      (setq time-machine-current-position (+ 1 current-position)
-            time-machine-filename filename))))
+      (time-machine-create-buffer filename current-position buffername))))
+
 
 (define-minor-mode time-machine-mode
   "Toggle Time Machine mode, globally.
